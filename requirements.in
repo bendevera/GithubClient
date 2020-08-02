@@ -1,0 +1,6 @@
+requests
+isort
+mypy
+flake8
+python-dotenv
+pytest
