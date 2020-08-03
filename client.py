@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import requests
 from dotenv import load_dotenv
@@ -9,6 +9,7 @@ load_dotenv()
 
 
 class GithubClient:
+    """ GitHub client to get pull request data. """
 
     def __init__(self, token: str, owner: str, repo: str):
         self.headers = self.__get_headers(token)
@@ -41,6 +42,47 @@ class GithubClient:
             self.owner, self.repo, number)
         response = requests.get(url, headers=self.headers)
         return response.json()
+
+    def create_pull(
+            self,
+            title: str,
+            head: str,
+            base: str,
+            body: str = "",
+            maintainer_can_modify: bool = True,
+            draft: bool = False) -> Tuple[bool, Dict]:
+        params = {
+            "title": title,
+            "head": head,
+            "base": base,
+            "body": body,
+            "maintainer_can_modify": maintainer_can_modify,
+            "draft": draft
+        }
+        url = "https://api.github.com/repos/%s/%s/pulls" % (
+            self.owner, self.repo)
+        response = requests.post(url, headers=self.headers, params=params)
+        return response.status_code == 201, response.json()
+
+    def update_pull(self, number: int, params: Dict) -> Tuple[bool, Dict]:
+        url = "https://api.github.com/repos/%s/%s/pulls/%s" % (
+            self.owner, self.repo, number)
+        response = requests.patch(url, headers=self.headers, params=params)
+        return response.status_code == 200, response.json()
+
+    def is_merged(self, number: int) -> bool:
+        url = "https://api.github.com/repos/%s/%s/pulls/%s/merge" % (
+            self.owner, self.repo, number)
+        response = requests.get(url, headers=self.headers)
+        return response.status_code == 204
+
+    def merge_pull(self, number: int, params: Dict = {}) -> Tuple[bool, str]:
+        if params == {}:
+            params = {"commit_title": "merging pull id %s" % (number)}
+        url = "https://api.github.com/repos/%s/%s/pulls/%s/merge" % (
+            self.owner, self.repo, number)
+        response = requests.put(url, headers=self.headers, params=params)
+        return response.status_code == 200, response.json()["message"]
 
 
 def main(token: str, owner: str, repo: str):
