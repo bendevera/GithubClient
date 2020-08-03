@@ -11,6 +11,8 @@ load_dotenv()
 class GithubClient:
     """ GitHub client to get pull request data. """
 
+    base_url = "https://api.github.com"
+
     def __init__(self, token: str, owner: str, repo: str):
         self.headers = self.__get_headers(token)
         self.owner = owner
@@ -20,26 +22,26 @@ class GithubClient:
         return {'Authorization': 'token %s' % token}
 
     def list_pull_requests(self, params: Dict = {"state": "open"}) -> List:
-        url = "https://api.github.com/repos/%s/%s/pulls" % (
-            self.owner, self.repo)
+        url = "%s/repos/%s/%s/pulls" % (
+            self.base_url, self.owner, self.repo)
         response = requests.get(url, headers=self.headers, params=params)
         return response.json()
 
     def get_pull_commits(self, number: int) -> List:
-        url = "https://api.github.com/repos/%s/%s/pulls/%s/commits" % (
-            self.owner, self.repo, number)
+        url = "%s/repos/%s/%s/pulls/%s/commits" % (
+            self.base_url, self.owner, self.repo, number)
         response = requests.get(url, headers=self.headers)
         return response.json()
 
     def get_pull_files(self, number: int) -> List:
-        url = "https://api.github.com/repos/%s/%s/pulls/%s/files" % (
-            self.owner, self.repo, number)
+        url = "%s/repos/%s/%s/pulls/%s/files" % (
+            self.base_url, self.owner, self.repo, number)
         response = requests.get(url, headers=self.headers)
         return response.json()
 
     def get_pull_comments(self, number: int) -> List:
-        url = "https://api.github.com/repos/%s/%s/pulls/%s/comments" % (
-            self.owner, self.repo, number)
+        url = "%s/repos/%s/%s/pulls/%s/comments" % (
+            self.base_url, self.owner, self.repo, number)
         response = requests.get(url, headers=self.headers)
         return response.json()
 
@@ -59,28 +61,28 @@ class GithubClient:
             "maintainer_can_modify": maintainer_can_modify,
             "draft": draft
         }
-        url = "https://api.github.com/repos/%s/%s/pulls" % (
-            self.owner, self.repo)
+        url = "%s/repos/%s/%s/pulls" % (
+            self.base_url, self.owner, self.repo)
         response = requests.post(url, headers=self.headers, json=params)
         return response.status_code == 201, response.json()
 
     def update_pull(self, number: int, params: Dict) -> Tuple[bool, Dict]:
-        url = "https://api.github.com/repos/%s/%s/pulls/%s" % (
-            self.owner, self.repo, number)
+        url = "%s/repos/%s/%s/pulls/%s" % (
+            self.base_url, self.owner, self.repo, number)
         response = requests.patch(url, headers=self.headers, json=params)
         return response.status_code == 200, response.json()
 
     def is_merged(self, number: int) -> bool:
-        url = "https://api.github.com/repos/%s/%s/pulls/%s/merge" % (
-            self.owner, self.repo, number)
+        url = "%s/repos/%s/%s/pulls/%s/merge" % (
+            self.base_url, self.owner, self.repo, number)
         response = requests.get(url, headers=self.headers)
         return response.status_code == 204
 
     def merge_pull(self, number: int, params: Dict = {}) -> Tuple[bool, str]:
         if params == {}:
             params = {"commit_title": "merging pull id %s" % (number)}
-        url = "https://api.github.com/repos/%s/%s/pulls/%s/merge" % (
-            self.owner, self.repo, number)
+        url = "%s/repos/%s/%s/pulls/%s/merge" % (
+            self.base_url, self.owner, self.repo, number)
         response = requests.put(url, headers=self.headers, params=params)
         return response.status_code == 200, response.json()["message"]
 
