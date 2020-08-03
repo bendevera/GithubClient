@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from client import GithubClient
 
@@ -13,12 +14,17 @@ def test_client() -> None:
 
     success, pull_request = client.create_pull(
         "Test Pull",
-        "test-branch-1",
+        "test-branch-2",
         "master")
     assert success
 
     is_merged = client.is_merged(pull_request["number"])
     assert not is_merged
 
-    success, _ = client.merge_pull(pull_request["number"])
+    success, pull_request = client.update_pull(
+        pull_request["number"],
+        {
+            "state": "closed",
+            "body": "test completed %s" % (datetime.now())
+        })
     assert success

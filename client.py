@@ -53,7 +53,7 @@ class GithubClient:
             draft: bool = False) -> Tuple[bool, Dict]:
         params = {
             "title": title,
-            "head": head,
+            "head": self.owner + ":" + head,
             "base": base,
             "body": body,
             "maintainer_can_modify": maintainer_can_modify,
@@ -61,13 +61,13 @@ class GithubClient:
         }
         url = "https://api.github.com/repos/%s/%s/pulls" % (
             self.owner, self.repo)
-        response = requests.post(url, headers=self.headers, params=params)
+        response = requests.post(url, headers=self.headers, json=params)
         return response.status_code == 201, response.json()
 
     def update_pull(self, number: int, params: Dict) -> Tuple[bool, Dict]:
         url = "https://api.github.com/repos/%s/%s/pulls/%s" % (
             self.owner, self.repo, number)
-        response = requests.patch(url, headers=self.headers, params=params)
+        response = requests.patch(url, headers=self.headers, json=params)
         return response.status_code == 200, response.json()
 
     def is_merged(self, number: int) -> bool:
