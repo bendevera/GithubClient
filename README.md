@@ -11,5 +11,5 @@ $ make isort
 $ make venv
 
 # run tests and check types/style
-make test
+$ make test
 ```
